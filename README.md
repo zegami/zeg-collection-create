@@ -1,2 +1,2 @@
-# zeg-collection-create
-API client for creating Zeg collections
+# Create Zeg collection
+API client for creating Zeg collections.

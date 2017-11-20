@@ -1,0 +1,79 @@
+# Copyright 2017 Zegami Ltd
+
+__doc__ = """Command line script to create a Zeg based collection."""
+
+import argparse
+import sys
+import yaml
+
+from . import (
+    api,
+    run,
+)
+
+
+def parse_args(argv):
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(argv[0], description=__doc__)
+    parser.add_argument(
+        "--collection",
+        help="Collection details in YAML format",
+    )
+    parser.add_argument(
+        "--api-url",
+        default="https://app.zegami.com/api/",
+        help="Zegami api endpoint",
+    )
+    parser.add_argument(
+        "--project",
+        help="Project id to make collection in",
+    )
+    parser.add_argument(
+        "--token",
+        help="Temp hack to use token over login",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="show progress",
+    )
+    args = parser.parse_args(argv[1:])
+
+    return args
+
+
+def main(argv):
+    """Application entry point."""
+    args = parse_args(argv)
+    # parse yaml collection configuration
+    with open(args.collection, 'r') as stream:
+        try:
+            yargs = yaml.load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+
+    reporter = run.Reporter(sys.stderr, args.verbose)
+    if args.api_url is None:
+        client = None
+    else:
+        client = api.Client(args.api_url, args.project, args.token)
+    try:
+        run.create_collection(
+            reporter,
+            client,
+            yargs['collection_name'],
+            yargs['collection_description'] if 'collection_description' in yargs else None,
+            yargs['data_file'],
+            yargs['image_folders'],
+            yargs['xslt_file'],
+        )
+    except (EnvironmentError, ValueError) as e:
+        sys.stderr.write("error: {}\n".format(e))
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

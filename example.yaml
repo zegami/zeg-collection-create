@@ -1,0 +1,11 @@
+# The name of the collection
+collection_name: Collection Name
+# The collection description, not required
+collection_description: Description
+# A list of folders containing images
+image_folders:
+  - images
+# Path to the data file for the collection. Can be .csv, .tsv or .xlsx
+data_file: path to .tsv file
+# Path to the XSLT to generate an SVG image once data bound to a row
+xslt_file: path to the .xslt file
