@@ -3,11 +3,13 @@
 __doc__ = """Command line script to create a Zeg based collection."""
 
 import argparse
+import getpass
 import sys
 import yaml
 
 from . import (
     api,
+    auth,
     run,
 )
 
@@ -20,17 +22,18 @@ def parse_args(argv):
         help="Collection details in YAML format",
     )
     parser.add_argument(
+        "--project",
+        help="Project id to make collection in",
+    )
+    parser.add_argument(
         "--api-url",
         default="https://app.zegami.com/api/",
         help="Zegami api endpoint",
     )
     parser.add_argument(
-        "--project",
-        help="Project id to make collection in",
-    )
-    parser.add_argument(
-        "--token",
-        help="Temp hack to use token over login",
+        "--oauth-url",
+        default="https://app.zegami.com/oauth/token/",
+        help="Zegami authentication endpoint",
     )
     parser.add_argument(
         "-v",
@@ -47,6 +50,21 @@ def parse_args(argv):
 def main(argv):
     """Application entry point."""
     args = parse_args(argv)
+    reporter = run.Reporter(sys.stderr, args.verbose)
+
+    # authenticate user
+    # get details
+    username = input('Email: ')
+    password = getpass.getpass('Password: ')
+    auth_client = auth.AuthClient(args.oauth_url)
+    token = auth_client.get_user_token(username, password)
+
+    if token is None:
+        sys.stderr.write("Failed to sign in!")
+        return 1
+
+    reporter("User successfully signed in.", level=0)
+
     # parse yaml collection configuration
     with open(args.collection, 'r') as stream:
         try:
@@ -54,11 +72,10 @@ def main(argv):
         except yaml.YAMLError as exc:
             print(exc)
 
-    reporter = run.Reporter(sys.stderr, args.verbose)
     if args.api_url is None:
         client = None
     else:
-        client = api.Client(args.api_url, args.project, args.token)
+        client = api.Client(args.api_url, args.project, token)
     try:
         run.create_collection(
             reporter,
@@ -66,7 +83,7 @@ def main(argv):
             yargs['collection_name'],
             yargs['collection_description'] if 'collection_description' in yargs else None,
             yargs['data_file'],
-            yargs['image_folders'],
+            yargs['image_folders'] if type(yargs['image_folders']) is list else [],
             yargs['xslt_file'],
         )
     except (EnvironmentError, ValueError) as e:
