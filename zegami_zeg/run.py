@@ -58,7 +58,8 @@ def create_collection(reporter,
                       collection_description,
                       data_file,
                       image_folders,
-                      xslt_file):
+                      xslt_file,
+                      columns_file):
     """Create a new collection."""
     collection = client.create_collection(
         collection_name,
@@ -99,6 +100,11 @@ def create_collection(reporter,
         )
         client.upload_zegx(collection['id'], bio)
         reporter("Created zegx template", level=0)
+
+    # upload a json with the column schema
+    if columns_file is not None:
+        with open(columns_file, 'rb') as f:
+            client.set_columns(f.read(), collection['dataset_id'])
 
 
 def api_upload_folder(reporter, client, image_folder, imageset_name):

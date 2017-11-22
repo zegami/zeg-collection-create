@@ -85,6 +85,7 @@ def main(argv):
             yargs['data_file'],
             yargs['image_folders'] if type(yargs['image_folders']) is list else [],
             yargs['xslt_file'],
+            yargs['columns_file'] if 'columns_file' in yargs else None
         )
     except (EnvironmentError, ValueError) as e:
         sys.stderr.write("error: {}\n".format(e))
