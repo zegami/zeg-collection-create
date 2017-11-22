@@ -1,6 +1,14 @@
 # Create Zeg collection
 API client for creating Zegami collections based on Zegs (dynamic databound tiles).
 
+## Installation
+To install, run
+```
+python setup.py install
+```
+
+Which will use pip to install all dependencies.
+
 ## Creating a collection
 To create a collection a configuration YAML file needs to be specified as well as the Zegami project identifier.
 
