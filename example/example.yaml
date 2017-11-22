@@ -1,11 +1,10 @@
 # The name of the collection
-collection_name: Collection Name
+collection_name: Example
 # The collection description, not required
-collection_description: Description
+collection_description: A data set of fictional companies
 # A list of folders containing images
 image_folders:
-  - images
 # Path to the data file for the collection. Can be .csv, .tsv or .xlsx
-data_file: path to .tsv file
+data_file: example/example_data.tsv
 # Path to the XSLT to generate an SVG image once data bound to a row
-xslt_file: path to the .xslt file
+xslt_file: example/example_zeg.xslt

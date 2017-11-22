@@ -34,3 +34,10 @@ data_file: path to .tsv file
 # Path to the XSLT to generate an SVG image once data bound to a row
 xslt_file: path to the .xslt file
 ```
+
+## Running the example collection
+The example directory contains a simple example of a collection `yaml` file, a data file and a Zeg. To try out the example, just run:
+
+```
+python upload.py --collection example/example.yaml --project <your project id here>
+```
