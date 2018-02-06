@@ -50,7 +50,7 @@ class Client(object):
         response_json = http.post_json(self.session, url, info)
         return response_json['imageset']
 
-    def create_join(self, name, imageset_id, dataset_id):
+    def create_join(self, name, imageset_id, dataset_id, join_column="id"):
         """Join an existing imageset to a dataset."""
         url = "{}v0/project/{}/datasets/".format(
             self.api_url, self.project)
@@ -59,7 +59,7 @@ class Client(object):
             "source": {
                 "imageset_id": imageset_id,
                 "dataset_id": dataset_id,
-                "imageset_name_join_to_dataset": {"dataset_column": "id"},
+                "imageset_name_join_to_dataset": {"dataset_column": join_column},
             }
         }
         response_json = http.post_json(self.session, url, info)
@@ -89,4 +89,10 @@ class Client(object):
         url = "{}v0/project/{}/collections/{}/zegx".format(
             self.api_url, self.project, collection_id)
         response_json = http.put_file(self.session, url, file, XSLT_TYPE)
+        return response_json
+
+    def set_columns(self, dataset_id, columns):
+        url = "{}v0/project/{}/datasets/{}/columns".format(
+            self.api_url, self.project, dataset_id)
+        response_json = http.put_json(self.session, url, columns)
         return response_json

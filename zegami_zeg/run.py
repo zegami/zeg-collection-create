@@ -15,6 +15,7 @@ PNG_TYPE = "image/png"
 JPEG_TYPE = "image/jpeg"
 FILE_TYPES = {
     '.jpg': JPEG_TYPE,
+    '.JPG': JPEG_TYPE,
     '.jpeg': JPEG_TYPE,
     '.png': PNG_TYPE,
 }
@@ -54,16 +55,21 @@ class Reporter(object):
 
 def create_collection(reporter,
                       client,
+                      auth_client,
                       collection_name,
                       collection_description,
                       data_file,
                       image_folders,
-                      xslt_file):
+                      xslt_file,
+                      columns_file,
+                      zegs,
+                      dynamic_custom_options=None,
+                      image_column='id'):
     """Create a new collection."""
     collection = client.create_collection(
         collection_name,
         collection_description,
-        True)
+        zegs)
     reporter("Created collection", level=0)
 
     with open(data_file, 'rb') as f:
@@ -74,37 +80,82 @@ def create_collection(reporter,
             filename=data_file
         )
     imageset_ids = dict()
+    if zegs:
     # create an imageset for each folder
+<<<<<<< HEAD
+        for directory in image_folders:
+            directory_name = get_path_directory_name(directory)
+            imageset_ids[directory_name] = api_upload_folder(
+                    reporter,
+                    client,
+                    auth_client,
+                    directory,
+                    directory_name
+            )
+        # perform this substitution on the .tsv above if the
+        # image filenames are specified in there instead
+=======
     for directory in image_folders:
         directory_name = get_path_directory_name(directory)
         imageset = api_upload_folder(
             reporter,
             client,
+            auth_client,
             directory,
             directory_name
         )
         imageset_ids[directory_name] = imageset['id']
 
+    if zegs == 'True':
     # perform this substitution on the .tsv above if the
     # image filenames are specified in there instead
-    with open(xslt_file, 'rb') as f:
-        bio = io.BytesIO(
-            update_paths(
-                client.project,
-                imageset_ids,
-                f,
-                client.api_url,
-                image_folders,
+>>>>>>> 35eee15a13896f418901e707ed3933de1dbe2d18
+        with open(xslt_file, 'rb') as f:
+            bio = io.BytesIO(
+                update_paths(
+                    client.project,
+                    imageset_ids,
+                    f,
+                    client.api_url,
+                    image_folders,
+                )
             )
+            collection['dynamic_custom_options'] = dynamic_custom_options
+            client.update_collection(collection['id'], collection)
+            client.upload_zegx(collection['id'], bio)
+            reporter("Created zegx template", level=0)
+    else:
+        imageset_ids[get_path_directory_name(image_folders[0])] = api_upload_folder(
+                reporter,
+                client,
+                auth_client,
+                image_folders[0],
+                get_path_directory_name(image_folders[0]),
+                existing_imageset_id=collection['imageset_id']
         )
-        client.upload_zegx(collection['id'], bio)
-        reporter("Created zegx template", level=0)
+        join_ds = client.create_join("Join for " + collection['name'],
+                                     imageset_ids[get_path_directory_name(image_folders[0])],
+                                     collection['dataset_id'],
+                                     join_column=image_column)
+        collection['join_dataset_id'] = join_ds['id']
+        reporter("Joined images and data", level=0)
+        client.update_collection(collection['id'], collection)
 
 
-def api_upload_folder(reporter, client, image_folder, imageset_name):
+    # upload a json with the column schema
+    if columns_file is not None:
+        with open(columns_file, 'rb') as f:
+            client.set_columns(f.read(), collection['dataset_id'])
+
+
+def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name, existing_imageset_id=None):
+    if existing_imageset_id:
+        imageset_id = existing_imageset_id
+    else:
+        imageset = client.create_imageset(imageset_name)
+        imageset_id = imageset['id']
+        reporter("Created imageset {name}", level=0, name=imageset_name)
     """Upload all images within a folder to an imageset."""
-    imageset = client.create_imageset(imageset_name)
-    reporter("Created imageset {name}", level=0, name=imageset_name)
     for filename in os.listdir(image_folder):
         file_path = os.path.join(image_folder, filename)
         # the components being the file name and the extension
@@ -116,7 +167,7 @@ def api_upload_folder(reporter, client, image_folder, imageset_name):
             with open(file_path, 'rb') as f:
                 try:
                     client.upload_image(
-                        imageset['id'],
+                        imageset_id,
                         filename_components[0],
                         f,
                         FILE_TYPES[filename_components[1]]
@@ -124,18 +175,21 @@ def api_upload_folder(reporter, client, image_folder, imageset_name):
                     reporter(
                         "Imageset: {id}, uploaded {filename}",
                         level=0,
-                        id=imageset['id'],
+                        id=imageset_id,
                         filename=filename_components[0]
                     )
                 except requests.exceptions.RequestException as e:
                     reporter(
                         "Imageset: {id}, upload failed for {filename}\n{error}",
                         level=0,
-                        id=imageset['id'],
+                        id=imageset_id,
                         filename=filename_components[0],
                         error=e,
                     )
-    return imageset
+                except requests.exceptions.HTTPError as e:
+                    reporter("Requesting new token...", level=0)
+                    client.token = auth_client.get_user_token()
+    return imageset_id
 
 
 def update_paths(project, imageset_ids, file, api_url, image_folders):
@@ -153,7 +207,10 @@ def update_paths(project, imageset_ids, file, api_url, image_folders):
                             ).encode()
 
     directory_names = [get_path_directory_name(folder) for folder in image_folders]
-    pat = (r"(" + r'|'.join(directory_names) + r")/(.*?).png").encode()
+    pat = (r"({})/(.*?)({}|\")").format(
+                  r'|'.join(directory_names),
+                  r'|'.join(FILE_TYPES.keys())
+            ).encode()
     updatedfile = re.sub(pat, foldername_replace, file.read())
 
     with open("test.xslt", 'wb') as testfile:
