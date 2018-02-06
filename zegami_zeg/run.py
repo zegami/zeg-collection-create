@@ -15,7 +15,6 @@ PNG_TYPE = "image/png"
 JPEG_TYPE = "image/jpeg"
 FILE_TYPES = {
     '.jpg': JPEG_TYPE,
-    '.JPG': JPEG_TYPE,
     '.jpeg': JPEG_TYPE,
     '.png': PNG_TYPE,
 }
@@ -82,7 +81,6 @@ def create_collection(reporter,
     imageset_ids = dict()
     if zegs:
     # create an imageset for each folder
-<<<<<<< HEAD
         for directory in image_folders:
             directory_name = get_path_directory_name(directory)
             imageset_ids[directory_name] = api_upload_folder(
@@ -94,22 +92,6 @@ def create_collection(reporter,
             )
         # perform this substitution on the .tsv above if the
         # image filenames are specified in there instead
-=======
-    for directory in image_folders:
-        directory_name = get_path_directory_name(directory)
-        imageset = api_upload_folder(
-            reporter,
-            client,
-            auth_client,
-            directory,
-            directory_name
-        )
-        imageset_ids[directory_name] = imageset['id']
-
-    if zegs == 'True':
-    # perform this substitution on the .tsv above if the
-    # image filenames are specified in there instead
->>>>>>> 35eee15a13896f418901e707ed3933de1dbe2d18
         with open(xslt_file, 'rb') as f:
             bio = io.BytesIO(
                 update_paths(

@@ -86,17 +86,11 @@ def main(argv):
             yargs['collection_description']
                 if 'collection_description' in yargs else None,
             yargs['data_file'],
-<<<<<<< HEAD
             yargs['image_folders']
                 if type(yargs['image_folders']) is list else [],
             yargs['xslt_file'] if yargs['zegs'] else None,
             yargs['columns_file']
                 if 'columns_file' in yargs else None,
-=======
-            yargs['image_folders'] if type(yargs['image_folders']) is list else [],
-            yargs['xslt_file'] if 'xslt_file' in yargs else None,
-            yargs['columns_file'] if 'columns_file' in yargs else None,
->>>>>>> 35eee15a13896f418901e707ed3933de1dbe2d18
             yargs['zegs'],
             dynamic_custom_options=yargs['dynamic_custom_options']
                 if 'dynamic_custom_options' in yargs else None,

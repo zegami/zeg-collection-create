@@ -6,11 +6,10 @@ collection_description: Description
 image_folders:
   - images
 # Path to the data file for the collection. Can be .csv, .tsv or .xlsx
-<<<<<<< HEAD
 data_file: example_data.tsv
 # Is this a zeg collection?
 zegs: True
-# Path to the XSLT file for the collection. 
+# Path to the XSLT file for the collection.
 # Necessary for zeg collections only.
 xslt_file: example_zeg.xslt
 # Column of data file containing the image filename
@@ -31,10 +30,3 @@ dynamic_custom_options:
         - size: 1024
           name: large
           threshold: 520
-=======
-data_file: data.tsv
-# Is this a zeg collection?
-zegs: True
-# Path to the XSLT file for the zeg collection. Only necessary if zegs==True.
-xslt_file: zeg.xslt
->>>>>>> 35eee15a13896f418901e707ed3933de1dbe2d18
