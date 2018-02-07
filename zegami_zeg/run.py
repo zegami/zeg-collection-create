@@ -147,30 +147,35 @@ def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name
         if len(filename_components) > 1 and \
                 filename_components[1].lower() in FILE_TYPES.keys():
             with open(file_path, 'rb') as f:
-                try:
-                    client.upload_image(
-                        imageset_id,
-                        filename_components[0],
-                        f,
-                        FILE_TYPES[filename_components[1].lower()]
-                    )
-                    reporter(
-                        "Imageset: {id}, uploaded {filename}",
-                        level=0,
-                        id=imageset_id,
-                        filename=filename_components[0]
-                    )
-                except requests.exceptions.RequestException as e:
-                    reporter(
-                        "Imageset: {id}, upload failed for {filename}\n{error}",
-                        level=0,
-                        id=imageset_id,
-                        filename=filename_components[0],
-                        error=e,
-                    )
-                except requests.exceptions.HTTPError as e:
-                    reporter("Requesting new token...", level=0)
-                    client.token = auth_client.get_user_token()
+                i = 3
+                while i > 0:
+                    try:
+                        client.upload_image(
+                            imageset_id,
+                            filename_components[0],
+                            f,
+                            FILE_TYPES[filename_components[1].lower()]
+                        )
+                        reporter(
+                            "Imageset: {id}, uploaded {filename}",
+                            level=0,
+                            id=imageset_id,
+                            filename=filename_components[0]
+                        )
+                    except requests.exceptions.RequestException as e:
+                        reporter(
+                            "Imageset: {id}, upload failed for {filename}\n{error}",
+                            level=0,
+                            id=imageset_id,
+                            filename=filename_components[0],
+                            error=e,
+                        )
+                    except requests.exceptions.HTTPError as e:
+                        reporter("Requesting new token...", level=0)
+                        client.update_token(auth_client.get_user_token())
+                        i -= 1
+                        continue
+                    break
     return imageset_id
 
 

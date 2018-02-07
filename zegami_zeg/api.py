@@ -64,7 +64,8 @@ class Client(object):
             "source": {
                 "imageset_id": imageset_id,
                 "dataset_id": dataset_id,
-                "imageset_name_join_to_dataset": {"dataset_column": join_column},
+                "imageset_name_join_to_dataset": {
+                    "dataset_column": join_column},
             }
         }
         response_json = http.post_json(self.session, url, info)
