@@ -25,6 +25,11 @@ class Client(object):
         auth = http.TokenEndpointAuth(api_url, token)
         self.session = http.make_session(auth)
 
+    def update_token(self, token):
+        self.token = token
+        auth = http.TokenEndpointAuth(self.api_url, self.token)
+        self.session = http.make_session(auth)
+
     def create_collection(self, name, description=None, dynamic=False):
         """Create a new collection."""
         url = "{}v0/project/{}/collections/".format(self.api_url, self.project)

@@ -145,14 +145,14 @@ def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name
             os.path.basename(file_path)
         )
         if len(filename_components) > 1 and \
-                filename_components[1] in FILE_TYPES.keys():
+                filename_components[1].lower() in FILE_TYPES.keys():
             with open(file_path, 'rb') as f:
                 try:
                     client.upload_image(
                         imageset_id,
                         filename_components[0],
                         f,
-                        FILE_TYPES[filename_components[1]]
+                        FILE_TYPES[filename_components[1].lower()]
                     )
                     reporter(
                         "Imageset: {id}, uploaded {filename}",
