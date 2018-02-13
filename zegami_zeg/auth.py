@@ -16,10 +16,12 @@ class AuthClient(object):
         """Initialise client."""
         self.oauth_url = oauth_url
         self.session = http.make_session()
-
-    def get_user_token(self, username, password):
+    def set_name_pass(self, username, password):
+        self.username = username
+        self.password = password
+    def get_user_token(self):
         """Authenticate user and get token."""
-        info = {"username": username, "password": password}
+        info = {"username": self.username, "password": self.password}
         token = None
         try:
             response_json = http.post_json(self.session, self.oauth_url, info)

@@ -57,7 +57,8 @@ def main(argv):
     username = input('Email: ')
     password = getpass.getpass('Password: ')
     auth_client = auth.AuthClient(args.oauth_url)
-    token = auth_client.get_user_token(username, password)
+    auth_client.set_name_pass(username, password)
+    token = auth_client.get_user_token()
 
     if token is None:
         sys.stderr.write("Failed to sign in!")
@@ -80,11 +81,21 @@ def main(argv):
         run.create_collection(
             reporter,
             client,
+            auth_client,
             yargs['collection_name'],
-            yargs['collection_description'] if 'collection_description' in yargs else None,
+            yargs['collection_description']
+                if 'collection_description' in yargs else None,
             yargs['data_file'],
-            yargs['image_folders'] if type(yargs['image_folders']) is list else [],
-            yargs['xslt_file'],
+            yargs['image_folders']
+                if type(yargs['image_folders']) is list else [],
+            yargs['xslt_file'] if yargs['zegs'] else None,
+            yargs['columns_file']
+                if 'columns_file' in yargs else None,
+            yargs['zegs'],
+            dynamic_custom_options=yargs['dynamic_custom_options']
+                if 'dynamic_custom_options' in yargs else None,
+            image_column=yargs['image_column']
+                if 'image_column' in yargs else None
         )
     except (EnvironmentError, ValueError) as e:
         sys.stderr.write("error: {}\n".format(e))

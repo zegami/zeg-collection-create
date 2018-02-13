@@ -1,10 +1,32 @@
 # The name of the collection
-collection_name: Example
+collection_name: Name
 # The collection description, not required
-collection_description: A data set of fictional companies
+collection_description: Description
 # A list of folders containing images
 image_folders:
+  - images
 # Path to the data file for the collection. Can be .csv, .tsv or .xlsx
-data_file: example/example_data.tsv
-# Path to the XSLT to generate an SVG image once data bound to a row
-xslt_file: example/example_zeg.xslt
+data_file: example_data.tsv
+# Is this a zeg collection?
+zegs: True
+# Path to the XSLT file for the collection.
+# Necessary for zeg collections only.
+xslt_file: example_zeg.xslt
+# Column of data file containing the image filename
+# Necessary for non-zeg collections only.
+image_column: 'stuff'
+# Custom config options, e.g. zeg size thresholds
+dynamic_custom_options:
+    sizes:
+        - size: 128
+          name: tiny
+          threshold: 0
+        - size: 256
+          name: small
+          threshold: 130
+        - size: 512
+          name: medium
+          threshold: 260
+        - size: 1024
+          name: large
+          threshold: 520
