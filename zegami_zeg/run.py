@@ -14,9 +14,9 @@ import requests
 PNG_TYPE = "image/png"
 JPEG_TYPE = "image/jpeg"
 FILE_TYPES = {
-    '.jpg': JPEG_TYPE,
-    '.jpeg': JPEG_TYPE,
-    '.png': PNG_TYPE,
+    'jpg': JPEG_TYPE,
+    'jpeg': JPEG_TYPE,
+    'png': PNG_TYPE,
 }
 
 
@@ -93,19 +93,21 @@ def create_collection(reporter,
         # perform this substitution on the .tsv above if the
         # image filenames are specified in there instead
         with open(xslt_file, 'rb') as f:
-            bio = io.BytesIO(
-                update_paths(
+            outf = update_paths(
                     client.project,
                     imageset_ids,
                     f,
                     client.api_url,
                     image_folders,
                 )
-            )
+
+            bio = io.BytesIO(outf)
             collection['dynamic_custom_options'] = dynamic_custom_options
             client.update_collection(collection['id'], collection)
             client.upload_zegx(collection['id'], bio)
             reporter("Created zegx template", level=0)
+            with open('test.xslt', 'wb') as wf:
+                wf.write(outf)
     else:
         imageset_ids[get_path_directory_name(image_folders[0])] = api_upload_folder(
                 reporter,
@@ -141,9 +143,7 @@ def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name
     for filename in os.listdir(image_folder):
         file_path = os.path.join(image_folder, filename)
         # the components being the file name and the extension
-        filename_components = os.path.splitext(
-            os.path.basename(file_path)
-        )
+        filename_components = os.path.basename(file_path).rsplit('.', 1)
         if len(filename_components) > 1 and \
                 filename_components[1].lower() in FILE_TYPES.keys():
             with open(file_path, 'rb') as f:
@@ -162,6 +162,12 @@ def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name
                             id=imageset_id,
                             filename=filename_components[0]
                         )
+                    except requests.exceptions.HTTPError as e:
+                        if e.response.status_code == 401:
+                            reporter("Requesting new token...", level=0)
+                            client.update_token(auth_client.get_user_token())
+                        i -= 1
+                        continue
                     except requests.exceptions.RequestException as e:
                         reporter(
                             "Imageset: {id}, upload failed for {filename}\n{error}",
@@ -170,11 +176,6 @@ def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name
                             filename=filename_components[0],
                             error=e,
                         )
-                    except requests.exceptions.HTTPError as e:
-                        reporter("Requesting new token...", level=0)
-                        client.update_token(auth_client.get_user_token())
-                        i -= 1
-                        continue
                     break
     return imageset_id
 
@@ -185,8 +186,7 @@ def update_paths(project, imageset_ids, file, api_url, image_folders):
     The URL needs to instead point to the imageset.
     """
     def foldername_replace(matchobj):
-        return os.path.join(api_url,
-                            "v0/project/{}/imagesets/{}/images/name:{}/data"
+        return (api_url + "v0/project/{}/imagesets/{}/images/name:{}/data\""
                             ).format(
                             project,
                             imageset_ids[matchobj.group(1).decode("utf-8")],
@@ -194,7 +194,7 @@ def update_paths(project, imageset_ids, file, api_url, image_folders):
                             ).encode()
 
     directory_names = [get_path_directory_name(folder) for folder in image_folders]
-    pat = (r"({})/(.*?)({}|\")").format(
+    pat = (r"({})/(.*?)(\.)?({})?\"").format(
                   r'|'.join(directory_names),
                   r'|'.join(FILE_TYPES.keys())
             ).encode()
