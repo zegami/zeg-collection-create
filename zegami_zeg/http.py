@@ -65,6 +65,10 @@ def put_file(session, url, filelike, mimetype):
         response.raise_for_status()
         return response.json()
 
+def get_json(session, url):
+    with session.get(url) as response:
+        response.raise_for_status()
+        return response.json()
 
 def put_json(session, url, python_obj):
     """Put json content and decode json response."""

@@ -95,7 +95,9 @@ def main(argv):
             dynamic_custom_options=yargs['dynamic_custom_options']
                 if 'dynamic_custom_options' in yargs else None,
             image_column=yargs['image_column']
-                if 'image_column' in yargs else None
+                if 'image_column' in yargs else None,
+            path_replace=yargs['path_replace']
+                if 'path_replace' in yargs else None
         )
     except (EnvironmentError, ValueError) as e:
         sys.stderr.write("error: {}\n".format(e))

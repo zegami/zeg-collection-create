@@ -36,6 +36,8 @@ class Client(object):
         info = {"name": name, "dynamic": dynamic}
         if description is not None:
             info["description"] = description
+        else:
+            info["description"] = ""
         response_json = http.post_json(self.session, url, info)
         return response_json['collection']
 
@@ -89,6 +91,14 @@ class Client(object):
             file,
             mime_type)
         return response_json
+
+    def update_imageset(self, imageset_id,  info):
+        url = "{}v0/project/{}/imagesets/{}".format(
+                self.api_url, self.project, imageset_id)
+        response_json = http.get_json(self.session, url)
+        request_json = response_json.update(info)
+        final_json = http.put_json(self.session, url, request_json)
+        return final_json
 
     def upload_zegx(self, collection_id, file):
         """Upload an XSLT."""
