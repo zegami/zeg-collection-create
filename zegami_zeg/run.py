@@ -115,6 +115,10 @@ def create_collection(reporter,
             with open('test.xslt', 'wb') as wf:
                 wf.write(text)
     else:
+        source={"deepzoom": {"midlevel": 10, "optimize": 'true', "overlap": 1, "quality": 95}}
+        info = {"source": source}
+        client.update_imageset(collection['dz_imageset_id'], info=info)
+
         imageset_ids[get_path_directory_name(image_folders[0])] = api_upload_folder(
                 reporter,
                 client,
@@ -175,6 +179,7 @@ def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name
                             reporter("Requesting new token...", level=0)
                             client.update_token(auth_client.get_user_token())
                         i -= 1
+                        reporter(str(e))
                         continue
                     except requests.exceptions.RequestException as e:
                         reporter(
@@ -186,10 +191,6 @@ def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name
                         )
                     break
 
-    if not zegs:
-        source={"deepzoom": {"midlevel": 10, "optimize": 'true', "overlap": 1, "quality": 95}}
-        info = {"source": source}
-        client.update_imageset(imageset_id, info=info)
 
     return imageset_id
 
