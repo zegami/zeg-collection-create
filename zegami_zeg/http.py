@@ -46,6 +46,7 @@ def make_session(auth=None):
 def post_json(session, url, python_obj):
     """Send a json request and decode json response."""
     with session.post(url, json=python_obj) as response:
+        print(response.json())
         response.raise_for_status()
         return response.json()
 
@@ -65,6 +66,10 @@ def put_file(session, url, filelike, mimetype):
         response.raise_for_status()
         return response.json()
 
+def get_json(session, url):
+    with session.get(url) as response:
+        response.raise_for_status()
+        return response.json()
 
 def put_json(session, url, python_obj):
     """Put json content and decode json response."""

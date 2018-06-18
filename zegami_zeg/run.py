@@ -63,13 +63,15 @@ def create_collection(reporter,
                       columns_file,
                       zegs,
                       dynamic_custom_options=None,
-                      image_column='id'):
+                      image_column='id',
+                      path_replace=None):
     """Create a new collection."""
     collection = client.create_collection(
         collection_name,
         collection_description,
         zegs)
-    reporter("Created collection", level=0)
+
+    reporter("Created collection " + collection['dataset_id'], level=0)
 
     with open(data_file, 'rb') as f:
         client.upload_data(collection['dataset_id'], data_file, f)
@@ -88,33 +90,42 @@ def create_collection(reporter,
                     client,
                     auth_client,
                     directory,
-                    directory_name
+                    directory_name,
+                    zegs
             )
         # perform this substitution on the .tsv above if the
         # image filenames are specified in there instead
         with open(xslt_file, 'rb') as f:
-            outf = update_paths(
+            text = f.read()
+            if path_replace is not None:
+                text = update_paths(
                     client.project,
                     imageset_ids,
-                    f,
+                    text,
                     client.api_url,
                     image_folders,
                 )
 
-            bio = io.BytesIO(outf)
+            bio = io.BytesIO(text)
             collection['dynamic_custom_options'] = dynamic_custom_options
+            collection['related_imageset_ids'] = [value for key, value in imageset_ids.items()]
             client.update_collection(collection['id'], collection)
             client.upload_zegx(collection['id'], bio)
             reporter("Created zegx template", level=0)
             with open('test.xslt', 'wb') as wf:
-                wf.write(outf)
+                wf.write(text)
     else:
+        source={"deepzoom": {"midlevel": 10, "optimize": 'true', "overlap": 1, "quality": 95}}
+        info = {"source": source}
+        client.update_imageset(collection['dz_imageset_id'], info=info)
+
         imageset_ids[get_path_directory_name(image_folders[0])] = api_upload_folder(
                 reporter,
                 client,
                 auth_client,
                 image_folders[0],
                 get_path_directory_name(image_folders[0]),
+                zegs,
                 existing_imageset_id=collection['imageset_id']
         )
         join_ds = client.create_join("Join for " + collection['name'],
@@ -132,13 +143,15 @@ def create_collection(reporter,
             client.set_columns(f.read(), collection['dataset_id'])
 
 
-def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name, existing_imageset_id=None):
+def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name, zegs, existing_imageset_id=None):
     if existing_imageset_id:
         imageset_id = existing_imageset_id
     else:
+        reporter("Creating imageset", level=0)
         imageset = client.create_imageset(imageset_name)
         imageset_id = imageset['id']
         reporter("Created imageset {name}", level=0, name=imageset_name)
+
     """Upload all images within a folder to an imageset."""
     for filename in os.listdir(image_folder):
         file_path = os.path.join(image_folder, filename)
@@ -167,6 +180,7 @@ def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name
                             reporter("Requesting new token...", level=0)
                             client.update_token(auth_client.get_user_token())
                         i -= 1
+                        reporter(str(e))
                         continue
                     except requests.exceptions.RequestException as e:
                         reporter(
@@ -177,10 +191,12 @@ def api_upload_folder(reporter, client, auth_client, image_folder, imageset_name
                             error=e,
                         )
                     break
+
+
     return imageset_id
 
 
-def update_paths(project, imageset_ids, file, api_url, image_folders):
+def update_paths(project, imageset_ids, text, api_url, image_folders):
     """Update the paths for all images in the XSLT.
 
     The URL needs to instead point to the imageset.
@@ -198,7 +214,7 @@ def update_paths(project, imageset_ids, file, api_url, image_folders):
                   r'|'.join(directory_names),
                   r'|'.join(FILE_TYPES.keys())
             ).encode()
-    updatedfile = re.sub(pat, foldername_replace, file.read())
+    updatedfile = re.sub(pat, foldername_replace, text)
 
     with open("test.xslt", 'wb') as testfile:
         testfile.write(updatedfile)
