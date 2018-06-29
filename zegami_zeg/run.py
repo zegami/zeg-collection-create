@@ -107,13 +107,13 @@ def create_collection(reporter,
                 )
 
             bio = io.BytesIO(text)
-            collection['dynamic_custom_options'] = dynamic_custom_options
+            with open('test.xslt', 'wb') as wf:
+                wf.write(text)
+            if dynamic_custom_options: collection['dynamic_custom_options'] = dynamic_custom_options 
             collection['related_imageset_ids'] = [value for key, value in imageset_ids.items()]
             client.update_collection(collection['id'], collection)
             client.upload_zegx(collection['id'], bio)
             reporter("Created zegx template", level=0)
-            with open('test.xslt', 'wb') as wf:
-                wf.write(text)
     else:
         source={"deepzoom": {"midlevel": 10, "optimize": 'true', "overlap": 1, "quality": 95}}
         info = {"source": source}
