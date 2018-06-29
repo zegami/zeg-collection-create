@@ -54,7 +54,7 @@ def main(argv):
 
     # authenticate user
     # get details
-    username = input('Email: ')
+    username = raw_input('Email: ')
     password = getpass.getpass('Password: ')
     auth_client = auth.AuthClient(args.oauth_url)
     auth_client.set_name_pass(username, password)
