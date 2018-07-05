@@ -107,9 +107,8 @@ def create_collection(reporter,
                 )
 
             bio = io.BytesIO(text)
-            with open('test.xslt', 'wb') as wf:
-                wf.write(text)
-            if dynamic_custom_options: collection['dynamic_custom_options'] = dynamic_custom_options 
+            if dynamic_custom_options:
+                collection['dynamic_custom_options'] = dynamic_custom_options
             collection['related_imageset_ids'] = [value for key, value in imageset_ids.items()]
             client.update_collection(collection['id'], collection)
             client.upload_zegx(collection['id'], bio)
