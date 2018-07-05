@@ -212,7 +212,7 @@ def update_paths(project, imageset_ids, text, api_url, image_folders):
     directory_names = [get_path_directory_name(folder) for folder in image_folders]
     pat = (r"({})/(.*?)(\.)?({})?\"").format(
                   r'|'.join(directory_names),
-                  r'|'.join(FILE_TYPES.keys())
+                  r'|'.join(FILE_TYPES)
             ).encode()
     updatedfile = re.sub(pat, foldername_replace, text)
 
