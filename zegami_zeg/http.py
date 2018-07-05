@@ -46,8 +46,8 @@ def make_session(auth=None):
 def post_json(session, url, python_obj):
     """Send a json request and decode json response."""
     with session.post(url, json=python_obj) as response:
-        print(response.json())
         response.raise_for_status()
+
         return response.json()
 
 

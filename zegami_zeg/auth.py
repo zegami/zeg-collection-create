@@ -23,9 +23,6 @@ class AuthClient(object):
         """Authenticate user and get token."""
         info = {"username": self.username, "password": self.password}
         token = None
-        try:
-            response_json = http.post_json(self.session, self.oauth_url, info)
-            token = response_json.get('token')
-        except:
-            pass
+        response_json = http.post_json(self.session, self.oauth_url, info)
+        token = response_json.get('token')
         return token

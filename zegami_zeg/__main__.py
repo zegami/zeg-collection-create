@@ -54,7 +54,7 @@ def main(argv):
 
     # authenticate user
     # get details
-    username = raw_input('Email: ')
+    username = input('Email: ')
     password = getpass.getpass('Password: ')
     auth_client = auth.AuthClient(args.oauth_url)
     auth_client.set_name_pass(username, password)
@@ -95,7 +95,7 @@ def main(argv):
             dynamic_custom_options=yargs['dynamic_custom_options']
                 if 'dynamic_custom_options' in yargs else None,
             image_column=yargs['image_column']
-                if 'image_column' in yargs else None,
+                if 'image_column' in yargs else 'id',
             path_replace=yargs['path_replace']
                 if 'path_replace' in yargs else None
         )

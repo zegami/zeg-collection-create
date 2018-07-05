@@ -77,7 +77,6 @@ class Client(object):
         """Upload a data file."""
         url = "{}v0/project/{}/datasets/{}/file".format(
             self.api_url, self.project, dataset_id)
-        print("YES")
         response_json = http.post_file(self.session, url, name, file, TSV_TYPE)
         return response_json
 

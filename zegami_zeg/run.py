@@ -114,9 +114,6 @@ def create_collection(reporter,
             client.upload_zegx(collection['id'], bio)
             reporter("Created zegx template", level=0)
     else:
-        source={"deepzoom": {"midlevel": 10, "optimize": 'true', "overlap": 1, "quality": 95}}
-        info = {"source": source}
-        client.update_imageset(collection['dz_imageset_id'], info=info)
 
         imageset_ids[get_path_directory_name(image_folders[0])] = api_upload_folder(
                 reporter,
